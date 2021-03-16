@@ -3,9 +3,7 @@ package bootcamp.casacodigo.validator;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 import bootcamp.casacodigo.repository.AutorRepository;
 
