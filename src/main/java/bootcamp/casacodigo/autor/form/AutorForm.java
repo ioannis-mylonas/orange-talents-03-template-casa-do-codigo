@@ -1,11 +1,12 @@
-package bootcamp.casacodigo.form;
+package bootcamp.casacodigo.autor.form;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import bootcamp.casacodigo.model.Autor;
-import bootcamp.casacodigo.validator.AutorEmailUnico;
+
+import bootcamp.casacodigo.autor.model.Autor;
+import bootcamp.casacodigo.autor.validator.AutorEmailUnico;
 
 public class AutorForm {
 	@NotNull @NotBlank

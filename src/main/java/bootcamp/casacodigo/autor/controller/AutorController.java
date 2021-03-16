@@ -1,4 +1,4 @@
-package bootcamp.casacodigo.controller;
+package bootcamp.casacodigo.autor.controller;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import bootcamp.casacodigo.form.AutorForm;
-import bootcamp.casacodigo.repository.AutorRepository;
+import bootcamp.casacodigo.autor.form.AutorForm;
+import bootcamp.casacodigo.autor.repository.AutorRepository;
 
 @RestController
 @RequestMapping("/autores")
@@ -26,5 +26,4 @@ public class AutorController {
 	public void cadastra(@RequestBody @Valid AutorForm autor) {
 		repository.save(autor.converte());
 	}
-	
 }

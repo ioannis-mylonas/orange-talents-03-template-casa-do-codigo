@@ -1,4 +1,4 @@
-package bootcamp.casacodigo.model;
+package bootcamp.casacodigo.autor.model;
 
 import java.time.LocalDateTime;
 

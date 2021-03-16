@@ -1,11 +1,11 @@
-package bootcamp.casacodigo.validator;
+package bootcamp.casacodigo.autor.validator;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import org.springframework.stereotype.Component;
 
-import bootcamp.casacodigo.repository.AutorRepository;
+import bootcamp.casacodigo.autor.repository.AutorRepository;
 
 @Component
 public class AutorEmailUnicoValidator implements

@@ -1,4 +1,4 @@
-package bootcamp.casacodigo.validator;
+package bootcamp.casacodigo.autor.validator;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
