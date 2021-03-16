@@ -4,13 +4,13 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-
 import bootcamp.casacodigo.model.Autor;
+import bootcamp.casacodigo.validator.AutorEmailUnico;
 
 public class AutorForm {
 	@NotNull @NotBlank
 	private String nome;
-	@NotNull @NotBlank @Email
+	@NotNull @NotBlank @Email @AutorEmailUnico
 	private String email;
 	@NotNull @NotBlank @Size(max = 400)
 	private String descricao;
