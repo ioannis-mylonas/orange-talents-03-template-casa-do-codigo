@@ -10,9 +10,6 @@ public class CategoriaForm {
 	@NotNull @NotBlank @CategoriaNomeUnique
 	private String nome;
 	
-	@Deprecated
-	public CategoriaForm() {}
-	
 	public void setNome(String nome) {
 		this.nome = nome;
 	}
