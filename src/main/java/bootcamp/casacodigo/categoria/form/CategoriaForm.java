@@ -4,10 +4,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import bootcamp.casacodigo.categoria.model.Categoria;
-import bootcamp.casacodigo.categoria.validator.CategoriaNomeUnique;
+import bootcamp.casacodigo.validator.UniqueColumn;
 
 public class CategoriaForm {
-	@NotNull @NotBlank @CategoriaNomeUnique
+	@NotNull @NotBlank @UniqueColumn(target=Categoria.class, column="nome")
 	private String nome;
 	
 	public void setNome(String nome) {

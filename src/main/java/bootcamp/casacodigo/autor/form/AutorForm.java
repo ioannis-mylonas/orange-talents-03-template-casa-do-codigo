@@ -6,12 +6,12 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import bootcamp.casacodigo.autor.model.Autor;
-import bootcamp.casacodigo.autor.validator.AutorEmailUnico;
+import bootcamp.casacodigo.validator.UniqueColumn;
 
 public class AutorForm {
 	@NotNull @NotBlank
 	private String nome;
-	@NotNull @NotBlank @Email @AutorEmailUnico
+	@NotNull @NotBlank @Email @UniqueColumn(target=Autor.class, column="email")
 	private String email;
 	@NotNull @NotBlank @Size(max = 400)
 	private String descricao;
