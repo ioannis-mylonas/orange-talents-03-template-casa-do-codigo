@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import bootcamp.casacodigo.categoria.form.CategoriaForm;
+import bootcamp.casacodigo.categoria.model.Categoria;
 import bootcamp.casacodigo.categoria.repository.CategoriaRepository;
 
 @RestController
@@ -23,7 +24,9 @@ public class CategoriaController {
 	
 	@PostMapping
 	@Transactional
-	public void cadastra(@RequestBody @Valid CategoriaForm form) {
-		repository.save(form.converte());
+	public Long cadastra(@RequestBody @Valid CategoriaForm form) {
+		Categoria categoria = form.converte();
+		repository.save(categoria);
+		return categoria.getId();
 	}
 }

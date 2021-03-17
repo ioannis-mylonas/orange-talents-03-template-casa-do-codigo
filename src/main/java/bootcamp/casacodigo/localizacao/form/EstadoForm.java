@@ -7,9 +7,10 @@ import bootcamp.casacodigo.localizacao.model.Estado;
 import bootcamp.casacodigo.localizacao.model.Pais;
 import bootcamp.casacodigo.localizacao.repository.PaisRepository;
 import bootcamp.casacodigo.validator.OneExists;
+import bootcamp.casacodigo.validator.UniqueColumn;
 
 public class EstadoForm {
-	@NotNull @NotBlank
+	@NotNull @NotBlank @UniqueColumn(target = Estado.class, column = "nome")
 	private String nome;
 	@NotNull @OneExists(target = Pais.class, column = "id")
 	private Long paisId;

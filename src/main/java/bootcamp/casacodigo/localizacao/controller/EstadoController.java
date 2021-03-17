@@ -14,7 +14,7 @@ import bootcamp.casacodigo.localizacao.repository.EstadoRepository;
 import bootcamp.casacodigo.localizacao.repository.PaisRepository;
 
 @RestController
-@RequestMapping("/estado")
+@RequestMapping("/estados")
 public class EstadoController {
 	
 	private EstadoRepository estadoRepository;
@@ -28,9 +28,9 @@ public class EstadoController {
 	
 	@PostMapping
 	@Transactional
-	public Estado cadastra(@RequestBody @Valid EstadoForm form) {
+	public Long cadastra(@RequestBody @Valid EstadoForm form) {
 		Estado res = form.converte(paisRepository);
 		estadoRepository.save(res);
-		return res;
+		return res.getId();
 	}
 }

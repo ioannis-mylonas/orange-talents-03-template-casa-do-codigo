@@ -13,7 +13,7 @@ import bootcamp.casacodigo.localizacao.model.Pais;
 import bootcamp.casacodigo.localizacao.repository.PaisRepository;
 
 @RestController
-@RequestMapping("/pais")
+@RequestMapping("/paises")
 public class PaisController {
 	
 	private PaisRepository repository;
@@ -24,9 +24,9 @@ public class PaisController {
 	
 	@PostMapping
 	@Transactional
-	public Pais cadastra(@RequestBody @Valid PaisForm form) {
+	public Long cadastra(@RequestBody @Valid PaisForm form) {
 		Pais res = form.converte();
 		repository.save(res);
-		return res;
+		return res.getId();
 	}
 }

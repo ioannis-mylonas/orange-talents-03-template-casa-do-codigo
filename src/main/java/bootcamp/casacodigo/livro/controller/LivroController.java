@@ -17,12 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 import bootcamp.casacodigo.autor.repository.AutorRepository;
 import bootcamp.casacodigo.categoria.repository.CategoriaRepository;
 import bootcamp.casacodigo.livro.form.LivroForm;
+import bootcamp.casacodigo.livro.model.Livro;
 import bootcamp.casacodigo.livro.repository.LivroRepository;
 import bootcamp.casacodigo.livro.view.LivroDetalheView;
 import bootcamp.casacodigo.livro.view.LivroSimplesView;
 
 @RestController
-@RequestMapping("livros")
+@RequestMapping("/livros")
 public class LivroController {
 
 	private AutorRepository autorRepository;
@@ -40,8 +41,10 @@ public class LivroController {
 	
 	@PostMapping
 	@Transactional
-	public void cadastra(@RequestBody @Valid LivroForm form) {
-		livroRepository.save(form.converte(autorRepository, categoriaRepository));
+	public Long cadastra(@RequestBody @Valid LivroForm form) {
+		Livro livro = form.converte(autorRepository, categoriaRepository);
+		livroRepository.save(livro);
+		return livro.getId();
 	}
 	
 	@GetMapping

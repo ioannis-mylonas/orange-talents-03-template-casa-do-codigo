@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import bootcamp.casacodigo.autor.form.AutorForm;
+import bootcamp.casacodigo.autor.model.Autor;
 import bootcamp.casacodigo.autor.repository.AutorRepository;
 
 @RestController
@@ -23,7 +24,9 @@ public class AutorController {
 	
 	@PostMapping
 	@Transactional
-	public void cadastra(@RequestBody @Valid AutorForm autor) {
-		repository.save(autor.converte());
+	public Long cadastra(@RequestBody @Valid AutorForm form) {
+		Autor autor = form.converte();
+		repository.save(autor);
+		return autor.getId();
 	}
 }
