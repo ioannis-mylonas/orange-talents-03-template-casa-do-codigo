@@ -1,5 +1,6 @@
 package bootcamp.casacodigo.livro.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import javax.persistence.Column;
@@ -26,7 +27,7 @@ public class Livro {
 	@Lob
 	private String sumario;
 	@Column(nullable = false)
-	private Double preco;
+	private BigDecimal preco;
 	@Column(nullable = false)
 	private Integer paginas;
 	@Column(unique = true, nullable = false)
@@ -41,7 +42,7 @@ public class Livro {
 	private Autor autor;
 	
 	public Livro(String titulo, String resumo, String sumario,
-			Double preco, Integer paginas, String isbn,
+			BigDecimal preco, Integer paginas, String isbn,
 			LocalDate publicacao, Categoria categoria, Autor autor) {
 		
 		this.titulo = titulo;

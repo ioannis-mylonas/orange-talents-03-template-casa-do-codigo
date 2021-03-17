@@ -1,5 +1,6 @@
 package bootcamp.casacodigo.livro.form;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import javax.validation.constraints.Future;
@@ -24,14 +25,15 @@ public class LivroForm {
 	private String titulo;
 	@NotNull @NotBlank @Size(max = 500)
 	private String resumo;
+	@NotNull @NotBlank
 	private String sumario;
 	@NotNull @Min(value = 20)
-	private Double preco;
+	private BigDecimal preco;
 	@NotNull @Min(value = 100)
 	private Integer paginas;
 	@NotNull @NotBlank @UniqueColumn(target = Livro.class, column = "isbn")
 	private String isbn;
-	@Future
+	@Future @NotNull
 	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy")
 	private LocalDate publicacao;
 	@NotNull @OneExists(target = Categoria.class, column = "id")
@@ -42,7 +44,7 @@ public class LivroForm {
 	public LivroForm(@NotNull @NotBlank String titulo,
 			@NotNull @NotBlank @Size(max = 500) String resumo,
 			String sumario,
-			@NotNull @Min(20) Double preco,
+			@NotNull @Min(20) BigDecimal preco,
 			@NotNull @Min(100) Integer paginas,
 			@NotNull @NotBlank String isbn,
 			@NotNull Long categoriaId,
