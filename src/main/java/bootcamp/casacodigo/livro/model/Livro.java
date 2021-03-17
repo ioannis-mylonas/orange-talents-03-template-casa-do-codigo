@@ -25,6 +25,7 @@ public class Livro {
 	@Column(nullable = false, length = 500)
 	private String resumo;
 	@Lob
+	@Column(nullable = false)
 	private String sumario;
 	@Column(nullable = false)
 	private BigDecimal preco;
@@ -32,6 +33,7 @@ public class Livro {
 	private Integer paginas;
 	@Column(unique = true, nullable = false)
 	private String isbn;
+	@Column(nullable = false)
 	private LocalDate publicacao;
 	
 	@ManyToOne

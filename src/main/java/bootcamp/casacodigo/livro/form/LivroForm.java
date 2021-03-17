@@ -38,7 +38,7 @@ public class LivroForm {
 	private LocalDate publicacao;
 	@NotNull @OneExists(target = Categoria.class, column = "id")
 	private Long categoriaId;
-	@NotNull @OneExists(target = Categoria.class, column = "id")
+	@NotNull @OneExists(target = Autor.class, column = "id")
 	private Long autorId;
 	
 	public LivroForm(@NotNull @NotBlank String titulo,
