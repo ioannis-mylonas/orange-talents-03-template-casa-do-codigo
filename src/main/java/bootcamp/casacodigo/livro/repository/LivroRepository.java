@@ -1,10 +1,12 @@
 package bootcamp.casacodigo.livro.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import bootcamp.casacodigo.livro.model.Livro;
+import bootcamp.casacodigo.livro.view.LivroDetalheView;
 import bootcamp.casacodigo.livro.view.LivroSimplesView;
 
 public interface LivroRepository extends JpaRepository<Livro, Long> {
@@ -13,5 +15,7 @@ public interface LivroRepository extends JpaRepository<Livro, Long> {
 	 * projeção, usar esse método no lugar de findAll()
 	 * @return Lista de projeções de livros cadastrados
 	 */
-	public List<LivroSimplesView> findBy();
+	public List<LivroSimplesView> findLivroSimplesBy();
+	
+	public Optional<LivroDetalheView> findLivroDetalheById(Long id);
 }
