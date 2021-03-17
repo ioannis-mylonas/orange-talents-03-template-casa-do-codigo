@@ -6,8 +6,10 @@ import javax.validation.constraints.NotNull;
 import bootcamp.casacodigo.localizacao.model.Estado;
 import bootcamp.casacodigo.localizacao.model.Pais;
 import bootcamp.casacodigo.localizacao.repository.PaisRepository;
+import bootcamp.casacodigo.validator.EstadoUnique;
 import bootcamp.casacodigo.validator.OneExists;
 
+@EstadoUnique
 public class EstadoForm {
 	@NotNull @NotBlank
 	private String nome;
@@ -17,6 +19,14 @@ public class EstadoForm {
 	public EstadoForm(String nome, Long paisId) {
 		this.nome = nome;
 		this.paisId = paisId;
+	}
+	
+	public String getNome() {
+		return nome;
+	}
+	
+	public Long getPaisId() {
+		return paisId;
 	}
 	
 	public Estado converte(PaisRepository paisRepository) {
