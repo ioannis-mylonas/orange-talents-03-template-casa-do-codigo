@@ -14,7 +14,7 @@ import bootcamp.casacodigo.localizacao.repository.EstadoRepository;
 import bootcamp.casacodigo.localizacao.repository.PaisRepository;
 
 @RestController
-@RequestMapping("/estado")
+@RequestMapping("/estados")
 public class EstadoController {
 	
 	private EstadoRepository estadoRepository;

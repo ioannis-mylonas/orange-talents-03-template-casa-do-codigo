@@ -13,7 +13,7 @@ import bootcamp.casacodigo.localizacao.model.Pais;
 import bootcamp.casacodigo.localizacao.repository.PaisRepository;
 
 @RestController
-@RequestMapping("/pais")
+@RequestMapping("/paises")
 public class PaisController {
 	
 	private PaisRepository repository;
