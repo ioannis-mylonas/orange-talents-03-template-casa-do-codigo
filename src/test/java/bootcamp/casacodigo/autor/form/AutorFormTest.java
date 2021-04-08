@@ -14,6 +14,7 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory;
 
 import javax.validation.ConstraintViolation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -30,9 +31,9 @@ class AutorFormTest {
     @Autowired
     private ConfigurableApplicationContext applicationContext;
 
-    private static Stream<Arguments> provideAutoresInvalidosForValidacaoAutorVazioOuNull() {
+    private static Stream<Arguments> providenciaAutoresInvalidosForValidacaoAutorVazioOuNull() {
         List<String> nomes = Arrays.asList(null, "", "       ");
-        List<String> emails = Arrays.asList(null, "", "       ", "emailinvalido");
+        List<String> emails = Arrays.asList(null, "", "       ");
         List<String> descricoes = Arrays.asList(null, "", "      ");
 
         Stream.Builder<Arguments> builder = Stream.builder();
@@ -93,6 +94,75 @@ class AutorFormTest {
         return stream.build();
     }
 
+    private static Stream<Arguments> providenciaAutorParaValidacaoEmail() {
+        List<String> emailsInvalidos = List.of("emailInvalido", "email.invalido.com", "EmAIlInvaLiDo5");
+        List<String> emailsValidos = List.of("email.valido@email.com", "EmAiL.VALIDO2@email.com");
+
+        Stream.Builder<Arguments> stream = Stream.builder();
+        AutorFormBuilder builder = new AutorFormBuilder();
+
+        for (String invalido : emailsInvalidos) {
+            stream.add(Arguments.of(builder
+                    .nome("Nome Autor")
+                    .email(invalido)
+                    .descricao("Descrição Autor").build(), false
+            ));
+        }
+
+        for (String valido : emailsValidos) {
+            stream.add(Arguments.of(builder
+                    .nome("Nome Autor")
+                    .email(valido)
+                    .descricao("Descrição Autor").build(), true
+            ));
+        }
+
+        return stream.build();
+    }
+
+    private static Stream<Arguments> providenciaEmailsDuplicados() {
+        String nome = "Nome Qualquer";
+        String descricao = "Descrição qualquer...";
+
+        List<String> emails = List.of("um.email@email.com",
+                "OuTRo.Email@email.com",
+                "Joaquina.Ellionel@email.com");
+
+        List<Autor> autores = new ArrayList<Autor>();
+        AutorBuilder autorBuilder = new AutorBuilder();
+        AutorFormBuilder autorFormBuilder = new AutorFormBuilder().nome(nome).descricao(descricao);
+
+        for (String email : emails) {
+            autores.add(autorBuilder.nome(nome).descricao(descricao).email(email).build());
+        }
+
+        List<String> validos = List.of("email.inexistente@email.com",
+                "outro.email@inexistente");
+
+        List<String> invalidos = List.of("um.email@email.com",
+                "outro.email@email.com");
+
+        Stream.Builder<Arguments> stream = Stream.builder();
+
+        for (String valido : validos) {
+            AutorForm form = autorFormBuilder.email(valido).build();
+
+            stream.add(Arguments.of(
+                    autores, form, true
+            ));
+        }
+
+        for (String invalido : invalidos) {
+            AutorForm form = autorFormBuilder.email(invalido).build();
+
+            stream.add(Arguments.of(
+                    autores, form, false
+            ));
+        }
+
+        return stream.build();
+    }
+
     @BeforeEach
     public void setup() {
         validatorFactory = new SpringConstraintValidatorFactory(
@@ -105,7 +175,7 @@ class AutorFormTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideAutoresInvalidosForValidacaoAutorVazioOuNull")
+    @MethodSource("providenciaAutoresInvalidosForValidacaoAutorVazioOuNull")
     public void validacaoAutorVazioOuNull(AutorForm autor) {
         Set<ConstraintViolation<AutorForm>> errors = validator.validate(autor);
         Assertions.assertFalse(errors.isEmpty());
@@ -123,6 +193,22 @@ class AutorFormTest {
     public void validacaoAutorJaExistente(AutorForm autor, Autor existente, boolean valido) {
         autorRepository.save(existente);
         Set<ConstraintViolation<AutorForm>> errors = validator.validate(autor);
+
+        Assertions.assertEquals(valido, errors.isEmpty());
+    }
+
+    @ParameterizedTest
+    @MethodSource("providenciaAutorParaValidacaoEmail")
+    public void validacaoAutorEmail(AutorForm autor, boolean valido) {
+        Set<ConstraintViolation<AutorForm>> errors = validator.validate(autor);
+        Assertions.assertEquals(valido, errors.isEmpty());
+    }
+
+    @ParameterizedTest
+    @MethodSource("providenciaEmailsDuplicados")
+    public void validacaoEmailJaExistente(List<Autor> autores, AutorForm form, boolean valido) {
+        autorRepository.saveAll(autores);
+        Set<ConstraintViolation<AutorForm>> errors = validator.validate(form);
 
         Assertions.assertEquals(valido, errors.isEmpty());
     }

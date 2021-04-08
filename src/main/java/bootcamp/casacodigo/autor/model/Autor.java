@@ -26,7 +26,7 @@ public class Autor {
 		
 	public Autor(String nome, String email, String descricao) {
 		this.nome = nome;
-		this.email = email;
+		this.email = email.toLowerCase();
 		this.descricao = descricao;
 	}
 	

@@ -27,7 +27,7 @@ public class UniqueColumnValidator implements
 	
 	@Override
 	public boolean isValid(Object value, ConstraintValidatorContext context) {
-		String q = String.format("SELECT 1 FROM %s WHERE %s=:value", target.getName(), column);
+		String q = String.format("SELECT 1 FROM %s WHERE %s=TRIM(LOWER(:value))", target.getName(), column);
 		Query query = manager.createQuery(q);
 		query.setParameter("value", value);
 		

@@ -17,7 +17,7 @@ public class Categoria {
 	public Categoria() {}
 	
 	public Categoria(String nome) {
-		this.nome = nome;
+		this.nome = nome.toLowerCase();
 	}
 	
 	public Long getId() {
