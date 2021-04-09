@@ -14,10 +14,8 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory;
 
 import javax.validation.ConstraintViolation;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.stream.Stream;
 
 @DataJpaTest
@@ -27,45 +25,71 @@ class AutorFormTest {
 
     @Autowired
     private AutorRepository autorRepository;
-
     @Autowired
     private ConfigurableApplicationContext applicationContext;
 
-    private static Stream<Arguments> providenciaAutoresInvalidosForValidacaoAutorVazioOuNull() {
-        List<String> nomes = Arrays.asList(null, "", "       ");
-        List<String> emails = Arrays.asList(null, "", "       ");
-        List<String> descricoes = Arrays.asList(null, "", "      ");
+    private static Map<String, List<String>> valoresValidos = Map.of(
+            "setNome", List.of("João Joaquim", "Aline Joanete", "Ellionel Leão"),
+            "setEmail", List.of("joao@joaquim.com", "aline@joanete.com", "ellionel.leao@email.com"),
+            "setDescricao", List.of("Este é o Dr. João.", "Esta é a Dra. Aline.", "Este é o Prof. Ellionel.")
+    );
+
+    private static AutorFormBuilder generateRandomValidForm() throws Exception {
+        AutorFormBuilder builder = new AutorFormBuilder();
+
+        for (String key : valoresValidos.keySet()) {
+            Random random = new Random();
+            Method method = builder.getClass().getMethod(key, String.class);
+            method.setAccessible(true);
+
+            List<String> values = valoresValidos.get(key);
+            String value = values.get(random.nextInt(values.size()));
+            method.invoke(builder, value);
+        }
+
+        return builder;
+    }
+
+    private static Stream<Arguments> providenciaAutoresInvalidosForValidacaoAutorVazioOuNull() throws Exception {
+        List<String> valoresInvalidos = Arrays.asList(null, "", "       ");
 
         Stream.Builder<Arguments> builder = Stream.builder();
+        AutorFormBuilder form = generateRandomValidForm();
 
-        for (String nome : nomes) {
-            for (String email : emails) {
-                for (String descricao : descricoes) {
-                    builder.add(Arguments.of(new AutorFormBuilder()
-                            .nome(nome)
-                            .email(email)
-                            .descricao(descricao)
-                            .build()));
-                }
+        for (String key : valoresValidos.keySet()) {
+            Method method = form.getClass().getMethod(key, String.class);
+            method.setAccessible(true);
+
+            for (String value : valoresInvalidos) {
+                method.invoke(form, value);
+                builder.add(Arguments.of(form.build(), String.format(
+                        "Valor %s no método %s deveria ser inválido!",
+                        value, key
+                )));
             }
+
+            Random random = new Random();
+            List<String> values = valoresValidos.get(key);
+            String value = values.get(random.nextInt(values.size()));
+            method.invoke(form, value);
         }
 
         return builder.build();
     }
 
     private static Stream<Arguments> providenciaAutorValidoParaValidacao() {
-        List<String> nomes = Arrays.asList("João Joaquim", "Aline Joanete", "Ellionel Leão");
-        List<String> emails = Arrays.asList("joao@joaquim.com", "aline@joanete.com", "ellionel.leao@email.com");
-        List<String> descricoes = Arrays.asList("Este é o Dr. João.", "Esta é a Dra. Aline.", "Este é o Prof. Ellionel.");
-
         AutorFormBuilder builder = new AutorFormBuilder();
         Stream.Builder<Arguments> streamBuilder = Stream.builder();
 
-        for (String nome : nomes) {
-            for (String email : emails) {
-                for (String descricao : descricoes) {
+        for (String nome : valoresValidos.get("setNome")) {
+            for (String email : valoresValidos.get("setEmail")) {
+                for (String descricao : valoresValidos.get("setDescricao")) {
                     streamBuilder.add(Arguments.of(
-                            builder.nome(nome).email(email).descricao(descricao).build()
+                            builder.setNome(nome).setEmail(email).setDescricao(descricao).build(),
+                            String.format(
+                                    "Nome %s, email %s, descrição %s deveriam ser válidos!",
+                                    nome, email, descricao
+                            )
                     ));
                 }
             }
@@ -86,7 +110,9 @@ class AutorFormTest {
         for (AutorForm form : autores) {
             for (AutorForm autor : autores) {
                 stream.add(Arguments.of(
-                        form, autor.converte(), form != autor
+                        form, autor.converte(), form != autor,
+                        form != autor ? "Objetos diferentes, deveria ser válido!" :
+                                "Objetos iguais, deveria ser inválido!"
                 ));
             }
         }
@@ -101,19 +127,23 @@ class AutorFormTest {
         Stream.Builder<Arguments> stream = Stream.builder();
         AutorFormBuilder builder = new AutorFormBuilder();
 
-        for (String invalido : emailsInvalidos) {
+        for (String email : emailsInvalidos) {
             stream.add(Arguments.of(builder
-                    .nome("Nome Autor")
-                    .email(invalido)
-                    .descricao("Descrição Autor").build(), false
+                    .setNome("Nome Autor")
+                    .setEmail(email)
+                    .setDescricao("Descrição Autor").build(), false, String.format(
+                            "Email %s deveria ser inválido!", email
+                    )
             ));
         }
 
-        for (String valido : emailsValidos) {
+        for (String email : emailsValidos) {
             stream.add(Arguments.of(builder
-                    .nome("Nome Autor")
-                    .email(valido)
-                    .descricao("Descrição Autor").build(), true
+                    .setNome("Nome Autor")
+                    .setEmail(email)
+                    .setDescricao("Descrição Autor").build(), true, String.format(
+                            "Email %s deveria ser válido!", email
+                    )
             ));
         }
 
@@ -130,10 +160,10 @@ class AutorFormTest {
 
         List<Autor> autores = new ArrayList<Autor>();
         AutorBuilder autorBuilder = new AutorBuilder();
-        AutorFormBuilder autorFormBuilder = new AutorFormBuilder().nome(nome).descricao(descricao);
+        AutorFormBuilder autorFormBuilder = new AutorFormBuilder().setNome(nome).setDescricao(descricao);
 
         for (String email : emails) {
-            autores.add(autorBuilder.nome(nome).descricao(descricao).email(email).build());
+            autores.add(autorBuilder.setNome(nome).setDescricao(descricao).setEmail(email).build());
         }
 
         List<String> validos = List.of("email.inexistente@email.com",
@@ -144,19 +174,23 @@ class AutorFormTest {
 
         Stream.Builder<Arguments> stream = Stream.builder();
 
-        for (String valido : validos) {
-            AutorForm form = autorFormBuilder.email(valido).build();
+        for (String email : validos) {
+            AutorForm form = autorFormBuilder.setEmail(email).build();
 
             stream.add(Arguments.of(
-                    autores, form, true
+                    autores, form, true, String.format(
+                            "Email %s é único e deveria ser válido!", email
+                    )
             ));
         }
 
-        for (String invalido : invalidos) {
-            AutorForm form = autorFormBuilder.email(invalido).build();
+        for (String email : invalidos) {
+            AutorForm form = autorFormBuilder.setEmail(email).build();
 
             stream.add(Arguments.of(
-                    autores, form, false
+                    autores, form, false, String.format(
+                            "Email %s é duplicado e deveria ser inválido!", email
+                    )
             ));
         }
 
@@ -176,40 +210,40 @@ class AutorFormTest {
 
     @ParameterizedTest
     @MethodSource("providenciaAutoresInvalidosForValidacaoAutorVazioOuNull")
-    public void validacaoAutorVazioOuNull(AutorForm autor) {
+    public void validacaoAutorVazioOuNull(AutorForm autor, String mensagem) {
         Set<ConstraintViolation<AutorForm>> errors = validator.validate(autor);
-        Assertions.assertFalse(errors.isEmpty());
+        Assertions.assertFalse(errors.isEmpty(), mensagem);
     }
 
     @ParameterizedTest
     @MethodSource("providenciaAutorValidoParaValidacao")
-    public void validacaoAutorValido(AutorForm autor) {
+    public void validacaoAutorValido(AutorForm autor, String mensagem) {
         Set<ConstraintViolation<AutorForm>> errors = validator.validate(autor);
-        Assertions.assertTrue(errors.isEmpty());
+        Assertions.assertTrue(errors.isEmpty(), mensagem);
     }
 
     @ParameterizedTest
     @MethodSource("providenciaAutorParaValidacaoDuplicada")
-    public void validacaoAutorJaExistente(AutorForm autor, Autor existente, boolean valido) {
+    public void validacaoAutorJaExistente(AutorForm autor, Autor existente, boolean valido, String mensagem) {
         autorRepository.save(existente);
         Set<ConstraintViolation<AutorForm>> errors = validator.validate(autor);
 
-        Assertions.assertEquals(valido, errors.isEmpty());
+        Assertions.assertEquals(valido, errors.isEmpty(), mensagem);
     }
 
     @ParameterizedTest
     @MethodSource("providenciaAutorParaValidacaoEmail")
-    public void validacaoAutorEmail(AutorForm autor, boolean valido) {
+    public void validacaoAutorEmail(AutorForm autor, boolean valido, String mensagem) {
         Set<ConstraintViolation<AutorForm>> errors = validator.validate(autor);
-        Assertions.assertEquals(valido, errors.isEmpty());
+        Assertions.assertEquals(valido, errors.isEmpty(), mensagem);
     }
 
     @ParameterizedTest
     @MethodSource("providenciaEmailsDuplicados")
-    public void validacaoEmailJaExistente(List<Autor> autores, AutorForm form, boolean valido) {
+    public void validacaoEmailJaExistente(List<Autor> autores, AutorForm form, boolean valido, String mensagem) {
         autorRepository.saveAll(autores);
         Set<ConstraintViolation<AutorForm>> errors = validator.validate(form);
 
-        Assertions.assertEquals(valido, errors.isEmpty());
+        Assertions.assertEquals(valido, errors.isEmpty(), mensagem);
     }
 }

@@ -45,24 +45,12 @@ class CategoriaFormTest {
         );
     }
 
-    public static Stream<Arguments> providenciaCategoriaFormsComNomesInvalidos() {
-        CategoriaFormBuilder builder = new CategoriaFormBuilder();
-
-        return Stream.of(
-                Arguments.of(builder.nome(null).build()),
-                Arguments.of(builder.nome("").build()),
-                Arguments.of(builder.nome("    ").build())
-        );
+    public static Stream<String> providenciaCategoriaFormsComNomesInvalidos() {
+        return Stream.of(null, "", "        ");
     }
 
-    public static Stream<Arguments> providenciaCategoriaFormsComNomesValidos() {
-        CategoriaFormBuilder builder = new CategoriaFormBuilder();
-
-        return Stream.of(
-                Arguments.of(builder.nome("Ação").build()),
-                Arguments.of(builder.nome("Ficção Científica").build()),
-                Arguments.of(builder.nome("Romance").build())
-        );
+    public static Stream<String> providenciaCategoriaFormsComNomesValidos() {
+        return Stream.of("Ação", "Ficção Científica", "Romance");
     }
 
     public static Stream<Arguments> providenciaNomeParaTesteNomeExistente() {
@@ -87,16 +75,22 @@ class CategoriaFormTest {
 
     @ParameterizedTest
     @MethodSource("providenciaCategoriaFormsComNomesInvalidos")
-    public void testaValidacaoNomeInvalido(CategoriaForm form) {
+    public void testaValidacaoNomeInvalido(String nome) {
+        CategoriaForm form = new CategoriaFormBuilder().nome(nome).build();
         Set<ConstraintViolation<CategoriaForm>> errors = validator.validate(form);
-        Assertions.assertFalse(errors.isEmpty());
+        Assertions.assertFalse(errors.isEmpty(), String.format(
+                "Nome %s deveria ser inválido!", nome
+        ));
     }
 
     @ParameterizedTest
     @MethodSource("providenciaCategoriaFormsComNomesValidos")
-    public void testaValidacaoNomeValido(CategoriaForm form) {
+    public void testaValidacaoNomeValido(String nome) {
+        CategoriaForm form = new CategoriaFormBuilder().nome(nome).build();
         Set<ConstraintViolation<CategoriaForm>> errors = validator.validate(form);
-        Assertions.assertTrue(errors.isEmpty());
+        Assertions.assertTrue(errors.isEmpty(), String.format(
+                "Nome %s deveria ser válido!", nome
+        ));
     }
 
     @ParameterizedTest
@@ -109,6 +103,8 @@ class CategoriaFormTest {
 
         Set<ConstraintViolation<CategoriaForm>> errors = validator.validate(form);
 
-        Assertions.assertEquals(valido, errors.isEmpty());
+        Assertions.assertEquals(valido, errors.isEmpty(), String.format(
+                "Teste de busca por nome existente %s falhou!", nome
+        ));
     }
 }

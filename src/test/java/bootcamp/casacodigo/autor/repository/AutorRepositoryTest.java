@@ -24,17 +24,17 @@ class AutorRepositoryTest {
 
         return List.of(
                 builder
-                        .nome("Mariana Soares")
-                        .email("mariana.soares@email.com")
-                        .descricao("Uma Descricao").build(),
+                        .setNome("Mariana Soares")
+                        .setEmail("mariana.soares@email.com")
+                        .setDescricao("Uma Descricao").build(),
                 builder
-                        .nome("João Joaquim")
-                        .email("joao.joaquim@email.com")
-                        .descricao("Dr. João Joaquim").build(),
+                        .setNome("João Joaquim")
+                        .setEmail("joao.joaquim@email.com")
+                        .setDescricao("Dr. João Joaquim").build(),
                 builder
-                        .nome("Ellionel dos Santos")
-                        .email("ellionel.santos@email.com")
-                        .descricao("Prof. Ellionel").build()
+                        .setNome("Ellionel dos Santos")
+                        .setEmail("ellionel.santos@email.com")
+                        .setDescricao("Prof. Ellionel").build()
         );
     }
 
@@ -54,9 +54,9 @@ class AutorRepositoryTest {
         return Stream.of(Arguments.of(autores, emailsInexistentes, emailsExistentes));
     }
 
-    public static Stream<Arguments> providenciaAutoresValidosParaTeste() {
+    public static Stream<List<Autor>> providenciaAutoresValidosParaTeste() {
         List<Autor> autores = geraAutoresValidos();
-        return Stream.of(Arguments.of(autores));
+        return Stream.of(autores);
     }
 
     @ParameterizedTest
@@ -69,12 +69,16 @@ class AutorRepositoryTest {
 
         for (String email : emailsInexistentes) {
             Optional<Autor> autor = autorRepository.findByEmailIgnoreCase(email);
-            Assertions.assertFalse(autor.isPresent());
+            Assertions.assertFalse(autor.isPresent(), String.format(
+                    "Email %s deveria existir mas não foi encontrado!", email
+            ));
         }
 
         for (String email : emailsExistentes) {
             Optional<Autor> autor = autorRepository.findByEmailIgnoreCase(email);
-            Assertions.assertTrue(autor.isPresent());
+            Assertions.assertTrue(autor.isPresent(), String.format(
+                    "Email %s não deveria existir mas foi encontrado!", email
+            ));
         }
     }
 
@@ -86,14 +90,18 @@ class AutorRepositoryTest {
 
         while (i <= autores.size()) {
             AutorLivroView view = autorRepository.findAutorLivroViewById(i);
-            Assertions.assertNotNull(view);
+            Assertions.assertNotNull(view, String.format(
+                    "Busca por id %s deveria ter encontrado mas retornou null", i
+            ));
 
             i++;
         }
 
         while (i <= autores.size() + 5) {
             AutorLivroView view = autorRepository.findAutorLivroViewById(i);
-            Assertions.assertNull(view);
+            Assertions.assertNull(view, String.format(
+                    "Busca por id %s não deveria ter encontrado nada mas retornou algo", i
+            ));
 
             i++;
         }

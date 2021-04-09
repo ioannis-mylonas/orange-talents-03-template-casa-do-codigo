@@ -54,7 +54,9 @@ class CategoriaRepositoryTest {
     public void testaFindNomesExistentes(List<Categoria> categorias, String nome) {
         categoriaRepository.saveAll(categorias);
         Optional<Categoria> categoria = categoriaRepository.findByNomeIgnoreCase(nome);
-        Assertions.assertTrue(categoria.isPresent());
+        Assertions.assertTrue(categoria.isPresent(), String.format(
+                "Categoria de nome %s foi salva e deveria estar presente!", nome
+        ));
     }
 
     @ParameterizedTest
@@ -62,6 +64,8 @@ class CategoriaRepositoryTest {
     public void testaFindNomesInexistentes(List<Categoria> categorias, String nome) {
         categoriaRepository.saveAll(categorias);
         Optional<Categoria> categoria = categoriaRepository.findByNomeIgnoreCase(nome);
-        Assertions.assertFalse(categoria.isPresent());
+        Assertions.assertFalse(categoria.isPresent(), String.format(
+                "Categoria de nome %s não foi salva e não deveria estar presente!", nome
+        ));
     }
 }

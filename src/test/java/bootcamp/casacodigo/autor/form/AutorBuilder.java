@@ -7,17 +7,17 @@ public class AutorBuilder {
     private String email;
     private String descricao;
 
-    public AutorBuilder nome(String nome) {
+    public AutorBuilder setNome(String nome) {
         this.nome = nome;
         return this;
     }
 
-    public AutorBuilder email(String email) {
+    public AutorBuilder setEmail(String email) {
         this.email = email;
         return this;
     }
 
-    public AutorBuilder descricao(String descricao) {
+    public AutorBuilder setDescricao(String descricao) {
         this.descricao = descricao;
         return this;
     }

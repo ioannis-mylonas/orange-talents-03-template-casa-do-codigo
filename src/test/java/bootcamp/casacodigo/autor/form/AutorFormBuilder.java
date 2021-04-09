@@ -5,17 +5,17 @@ public class AutorFormBuilder {
     private String email;
     private String descricao;
 
-    public AutorFormBuilder nome(String nome) {
+    public AutorFormBuilder setNome(String nome) {
         this.nome = nome;
         return this;
     }
 
-    public AutorFormBuilder email(String email) {
+    public AutorFormBuilder setEmail(String email) {
         this.email = email;
         return this;
     }
 
-    public AutorFormBuilder descricao(String descricao) {
+    public AutorFormBuilder setDescricao(String descricao) {
         this.descricao = descricao;
         return this;
     }

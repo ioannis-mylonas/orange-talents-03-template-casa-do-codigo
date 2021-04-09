@@ -24,6 +24,7 @@ public class EstadoValidoValidator implements ConstraintValidator<EstadoValido, 
 
 	@Override
 	public boolean isValid(ClienteForm value, ConstraintValidatorContext context) {
+		if (value.getPaisId() == null) return false;
 		Optional<Pais> pais = paisRepository.findById(value.getPaisId());
 		if (pais.isEmpty()) return false;
 		
