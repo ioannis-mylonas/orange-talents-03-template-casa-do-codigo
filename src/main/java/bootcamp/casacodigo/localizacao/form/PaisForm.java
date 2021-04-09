@@ -7,7 +7,7 @@ import bootcamp.casacodigo.localizacao.model.Pais;
 import bootcamp.casacodigo.validator.UniqueColumn;
 
 public class PaisForm {
-	@NotNull @NotBlank @UniqueColumn(target = Pais.class, column = "nome")
+	@NotBlank @UniqueColumn(target = Pais.class, column = "nome")
 	private String nome;
 	
 	public void setNome(String nome) {

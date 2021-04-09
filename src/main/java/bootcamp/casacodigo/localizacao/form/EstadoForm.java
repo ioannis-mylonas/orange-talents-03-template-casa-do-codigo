@@ -10,7 +10,7 @@ import bootcamp.casacodigo.validator.OneExists;
 import bootcamp.casacodigo.validator.UniqueColumn;
 
 public class EstadoForm {
-	@NotNull @NotBlank @UniqueColumn(target = Estado.class, column = "nome")
+	@NotBlank @UniqueColumn(target = Estado.class, column = "nome")
 	private String nome;
 	@NotNull @OneExists(target = Pais.class, column = "id")
 	private Long paisId;

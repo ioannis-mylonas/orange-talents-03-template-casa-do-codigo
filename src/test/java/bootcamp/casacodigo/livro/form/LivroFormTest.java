@@ -4,21 +4,16 @@ import bootcamp.casacodigo.autor.model.Autor;
 import bootcamp.casacodigo.autor.repository.AutorRepository;
 import bootcamp.casacodigo.categoria.model.Categoria;
 import bootcamp.casacodigo.categoria.repository.CategoriaRepository;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory;
 
-import javax.transaction.Transactional;
 import javax.validation.ConstraintViolation;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -79,6 +74,34 @@ public class LivroFormTest {
         List<Autor> autores = autorRepository.findAll();
         int index = random.nextInt(autores.size());
         return autores.get(index).getId();
+    }
+
+    private Long getRandomInexistentCategoriaId() {
+        List<Categoria> categorias = categoriaRepository.findAll();
+        long i = 1L;
+        while (true) {
+            Long id = i;
+            boolean exists = categorias.stream().anyMatch(categoria -> {
+                return categoria.getId().equals(id);
+            });
+
+            if (!exists) return id;
+            i++;
+        }
+    }
+
+    private Long getRandomInexistentAutorId() {
+        List<Autor> autores = autorRepository.findAll();
+        long i = 1L;
+        while (true) {
+            Long id = i;
+            boolean exists = autores.stream().anyMatch(autor -> {
+                return autor.getId().equals(id);
+            });
+
+            if (!exists) return id;
+            i++;
+        }
     }
 
     private LivroFormBuilder generateRandomValidFormBuilder() throws Exception {
@@ -174,5 +197,29 @@ public class LivroFormTest {
 
         Set<ConstraintViolation<LivroForm>> errors = validator.validate(builder.build());
         Assertions.assertEquals(esperado, errors.isEmpty(), mensagem);
+    }
+
+    @Test
+    public void testaCategoriaInexistente() throws Exception {
+        LivroFormBuilder builder = generateRandomValidFormBuilder();
+        long id = getRandomInexistentCategoriaId();
+        builder.setCategoriaId(id);
+
+        Set<ConstraintViolation<LivroForm>> errors = validator.validate(builder.build());
+        Assertions.assertFalse(errors.isEmpty(), String.format(
+                "Categoria de id %s não existe, errors não deveria estar vazio!", id
+        ));
+    }
+
+    @Test
+    public void testaAutorInexistente() throws Exception {
+        LivroFormBuilder builder = generateRandomValidFormBuilder();
+        long id = getRandomInexistentAutorId();
+        builder.setAutorId(id);
+
+        Set<ConstraintViolation<LivroForm>> errors = validator.validate(builder.build());
+        Assertions.assertFalse(errors.isEmpty(), String.format(
+                "Autor de id %s não existe, errors não deveria estar vazio!", id
+        ));
     }
 }
