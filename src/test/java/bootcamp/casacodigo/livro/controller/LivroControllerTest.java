@@ -8,16 +8,25 @@ import bootcamp.casacodigo.categoria.repository.CategoriaRepository;
 import bootcamp.casacodigo.livro.model.Livro;
 import bootcamp.casacodigo.livro.repository.LivroRepository;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-@WebMvcTest(LivroController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 @TestInstance(value = TestInstance.Lifecycle.PER_CLASS)
 class LivroControllerTest {
     @Autowired
@@ -31,10 +40,8 @@ class LivroControllerTest {
     private LivroRepository livroRepository;
 
     @BeforeAll
+    @Transactional
     public void setup () {
-        Categoria biografia = new Categoria("Biografia");
-        Categoria didatico = new Categoria("Didático");
-
         List<Categoria> categorias = List.of(
                 new Categoria("Ação"),
                 new Categoria("Mistério"),
@@ -69,7 +76,7 @@ class LivroControllerTest {
                         .setPaginas(152)
                         .setPublicacao(LocalDate.of(2022, 5, 14))
                         .setAutor(joaquim)
-                        .setCategoria(biografia).build(),
+                        .setCategoria(categorias.get(0)).build(),
                 livroBuilder
                         .setTitulo("O Grade Balão")
                         .setResumo("Um grande livro emocionante.")
@@ -79,8 +86,22 @@ class LivroControllerTest {
                         .setPaginas(200)
                         .setPublicacao(LocalDate.of(2025, 2, 21))
                         .setAutor(mariana)
-                        .setCategoria(didatico).build()
+                        .setCategoria(categorias.get(1)).build()
         );
         livroRepository.saveAll(livros);
+    }
+
+    @Test
+    public void testaGetLivroExistenteId() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get("/livros/1"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    public void testaGetLivroInexistenteId() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get("/livros/1000"))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 }

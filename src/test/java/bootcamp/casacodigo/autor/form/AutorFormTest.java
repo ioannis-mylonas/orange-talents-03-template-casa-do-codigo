@@ -13,6 +13,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory;
 
+import javax.transaction.Transactional;
 import javax.validation.ConstraintViolation;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -224,6 +225,7 @@ class AutorFormTest {
 
     @ParameterizedTest
     @MethodSource("providenciaAutorParaValidacaoDuplicada")
+    @Transactional
     public void validacaoAutorJaExistente(AutorForm autor, Autor existente, boolean valido, String mensagem) {
         autorRepository.save(existente);
         Set<ConstraintViolation<AutorForm>> errors = validator.validate(autor);
@@ -240,6 +242,7 @@ class AutorFormTest {
 
     @ParameterizedTest
     @MethodSource("providenciaEmailsDuplicados")
+    @Transactional
     public void validacaoEmailJaExistente(List<Autor> autores, AutorForm form, boolean valido, String mensagem) {
         autorRepository.saveAll(autores);
         Set<ConstraintViolation<AutorForm>> errors = validator.validate(form);

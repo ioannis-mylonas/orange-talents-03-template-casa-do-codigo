@@ -14,6 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory;
 
+import javax.transaction.Transactional;
 import javax.validation.ConstraintViolation;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -119,6 +120,7 @@ class ClienteFormTest {
     }
 
     @BeforeAll
+    @Transactional
     public void classSetup() {
         paisRepository.save(new Pais("Pais 1L"));
         Pais pais = paisRepository.save(new Pais("Pais 2L"));

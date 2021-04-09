@@ -21,17 +21,17 @@ import bootcamp.casacodigo.validator.OneExists;
 import bootcamp.casacodigo.validator.UniqueColumn;
 
 public class LivroForm {
-	@NotNull @NotBlank @UniqueColumn(target = Livro.class, column = "titulo")
+	@NotBlank @UniqueColumn(target = Livro.class, column = "titulo")
 	private String titulo;
-	@NotNull @NotBlank @Size(max = 500)
+	@NotBlank @Size(max = 500)
 	private String resumo;
-	@NotNull @NotBlank
+	@NotBlank
 	private String sumario;
 	@NotNull @Min(value = 20)
 	private BigDecimal preco;
 	@NotNull @Min(value = 100)
 	private Integer paginas;
-	@NotNull @NotBlank @UniqueColumn(target = Livro.class, column = "isbn")
+	@NotBlank @UniqueColumn(target = Livro.class, column = "isbn")
 	private String isbn;
 	@Future @NotNull
 	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy")
@@ -40,16 +40,16 @@ public class LivroForm {
 	private Long categoriaId;
 	@NotNull @OneExists(target = Autor.class, column = "id")
 	private Long autorId;
-	
-	public LivroForm(@NotNull @NotBlank String titulo,
-			@NotNull @NotBlank @Size(max = 500) String resumo,
-			String sumario,
-			@NotNull @Min(20) BigDecimal preco,
-			@NotNull @Min(100) Integer paginas,
-			@NotNull @NotBlank String isbn,
-			@NotNull Long categoriaId,
-			@NotNull Long autorId) {
-		
+
+	public LivroForm(@NotBlank String titulo,
+					 @NotBlank @Size(max = 500) String resumo,
+					 @NotBlank String sumario,
+					 @NotNull @Min(value = 20) BigDecimal preco,
+					 @NotNull @Min(value = 100) Integer paginas,
+					 @NotBlank String isbn,
+					 @NotNull Long categoriaId,
+					 @NotNull Long autorId) {
+
 		this.titulo = titulo;
 		this.resumo = resumo;
 		this.sumario = sumario;
@@ -59,7 +59,7 @@ public class LivroForm {
 		this.categoriaId = categoriaId;
 		this.autorId = autorId;
 	}
-	
+
 	/**
 	 * Método setter criado para serialização do Jackson
 	 * que não funciona com o construtor.

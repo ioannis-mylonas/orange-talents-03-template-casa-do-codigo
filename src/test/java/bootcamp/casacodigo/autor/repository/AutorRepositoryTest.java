@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -61,6 +62,7 @@ class AutorRepositoryTest {
 
     @ParameterizedTest
     @MethodSource("provideAutoresForConsultaEmail")
+    @Transactional
     public void testaBuscaEmailExistente(List<Autor> autores,
                                          List<String> emailsInexistentes,
                                          List<String> emailsExistentes) {
@@ -84,6 +86,7 @@ class AutorRepositoryTest {
 
     @ParameterizedTest
     @MethodSource("providenciaAutoresValidosParaTeste")
+    @Transactional
     public void testaBuscaAutorLivroView(List<Autor> autores) {
         autorRepository.saveAll(autores);
         Long i = 1L;
