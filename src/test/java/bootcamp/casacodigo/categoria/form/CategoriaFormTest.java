@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory;
 
@@ -24,7 +25,6 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
-@TestInstance(value = TestInstance.Lifecycle.PER_CLASS)
 class CategoriaFormTest {
     @Autowired
     private ApplicationContext applicationContext;
@@ -42,26 +42,20 @@ class CategoriaFormTest {
             new Categoria("Mistério")
     );
 
-    public static Stream<String> providenciaCategoriaFormsComNomesInvalidos() {
+    private static Stream<String> providenciaCategoriaFormsComNomesInvalidos() {
         return Stream.of(null, "", "        ");
     }
 
-    public static Stream<String> providenciaCategoriaFormsComNomesValidos() {
-        return Stream.of("Ação", "Ficção Científica", "Romance");
+    private static Stream<String> providenciaCategoriaFormsComNomesValidos() {
+        return Stream.of("Documentário", "Alienígenas", "Sobrenatural");
     }
 
-    public static Stream<Arguments> providenciaNomeParaTesteNomeExistente() {
+    private static Stream<Arguments> providenciaNomeParaTesteNomeExistente() {
         return Stream.of(
                 Arguments.of("Ação", false),
                 Arguments.of("mistério", false),
                 Arguments.of("Comédia", true)
         );
-    }
-
-    @BeforeAll
-    @Transactional
-    public void setupClass() {
-        categoriaRepository.saveAll(categorias);
     }
 
     @BeforeEach
@@ -73,6 +67,8 @@ class CategoriaFormTest {
         validator.setConstraintValidatorFactory(validatorFactory);
         validator.setApplicationContext(applicationContext);
         validator.afterPropertiesSet();
+
+        categoriaRepository.saveAll(categorias);
     }
 
     @ParameterizedTest

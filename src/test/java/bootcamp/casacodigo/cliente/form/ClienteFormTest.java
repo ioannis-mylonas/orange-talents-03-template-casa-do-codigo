@@ -18,10 +18,10 @@ import javax.transaction.Transactional;
 import javax.validation.ConstraintViolation;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @DataJpaTest
-@TestInstance(value = TestInstance.Lifecycle.PER_CLASS)
 class ClienteFormTest {
     @Autowired
     private PaisRepository paisRepository;
@@ -45,8 +45,8 @@ class ClienteFormTest {
             "setCep", List.of("65051-330", "82515-095", "66025-013")
     );
 
-    public static ClienteFormBuilder getRandomValidFormBuilder() throws Exception {
-        ClienteFormBuilder builder = new ClienteFormBuilder().setPaisId(1L);
+    private ClienteFormBuilder getRandomValidFormBuilder() throws Exception {
+        ClienteFormBuilder builder = new ClienteFormBuilder();
 
         for (String key : valoresStringValidos.keySet()) {
             Method method = builder.getClass().getMethod(key, String.class);
@@ -59,23 +59,22 @@ class ClienteFormTest {
             method.invoke(builder, possibilidades.get(index));
         }
 
+        builder.setPaisId(getPaisSemEstados().getId());
+
         return builder;
     }
 
-    public static Stream<Arguments> providenciaClienteFormParaValidacaoCamposVazios() throws Exception {
+    private static Stream<Arguments> providenciaClienteFormParaValidacaoCamposVazios() throws Exception {
         List<String> valoresInvalidos = Arrays.asList(null, "", "     ");
-        ClienteFormBuilder builder = getRandomValidFormBuilder();
-
         Stream.Builder<Arguments> stream = Stream.builder();
 
         for (String key : valoresStringValidos.keySet()) {
-            Method method = builder.getClass().getMethod(key, String.class);
+            Method method = ClienteFormBuilder.class.getMethod(key, String.class);
             method.setAccessible(true);
 
             for (String texto : valoresInvalidos) {
-                method.invoke(builder, texto);
                 stream.add(Arguments.of(
-                        builder.build(), false, String.format(
+                        method, texto, false, String.format(
                                 "Método %s colocado com valor %s deveria ser inválido!",
                                 key, texto
                         )
@@ -83,9 +82,8 @@ class ClienteFormTest {
             }
 
             for (String texto : valoresStringValidos.get(key)) {
-                method.invoke(builder, texto);
                 stream.add(Arguments.of(
-                        builder.build(), true, String.format(
+                        method, texto, true, String.format(
                                 "Método %s colocado com valor %s deveria ser válido!",
                                 key, texto
                         )
@@ -97,7 +95,6 @@ class ClienteFormTest {
     }
 
     private static Stream<Arguments> providenciaClienteFormParaValidacaoEmail() throws Exception {
-        ClienteFormBuilder builder = getRandomValidFormBuilder();
         List<String> emailsInvalidos = Arrays.asList(
                 "emailinvalido", "InVaLiDo", "email.invalido", "@", "algo@"
         );
@@ -105,13 +102,13 @@ class ClienteFormTest {
         Stream.Builder<Arguments> stream = Stream.builder();
 
         for (String email : emailsInvalidos) {
-            stream.add(Arguments.of(builder.setEmail(email).build(), false,
+            stream.add(Arguments.of(email, false,
                     String.format("Email de valor %s deveria ser inválido!", email)
             ));
         }
 
         for (String email : valoresStringValidos.get("setEmail")) {
-            stream.add(Arguments.of(builder.setEmail(email).build(), true,
+            stream.add(Arguments.of(email, true,
                     String.format("Email de valor %s deveria ser válido!", email)
             ));
         }
@@ -119,15 +116,76 @@ class ClienteFormTest {
         return stream.build();
     }
 
-    @BeforeAll
-    @Transactional
-    public void classSetup() {
-        paisRepository.save(new Pais("Pais 1L"));
-        Pais pais = paisRepository.save(new Pais("Pais 2L"));
-        paisRepository.save(new Pais("Pais 3L"));
+    private Pais getPaisSemEstados() {
+        List<Pais> paises = paisRepository.findAll();
+        List<Estado> estados = estadoRepository.findAll();
 
-        estadoRepository.save(new Estado("Estado 1L", pais));
-        estadoRepository.save(new Estado("Estado 2L", pais));
+        List<Pais> paisSemEstados = paises.stream().filter(i -> {
+            for (Estado estado : estados) {
+                if (estado.getPais().equals(i)) return false;
+            }
+            return true;
+        }).collect(Collectors.toList());
+
+        Random random = new Random();
+        int index = random.nextInt(paisSemEstados.size());
+        return paisSemEstados.get(index);
+    }
+
+    private Pais getPaisComEstados() {
+        List<Pais> paises = paisRepository.findAll();
+        List<Estado> estados = estadoRepository.findAll();
+
+        List<Pais> paisSemEstados = paises.stream().filter(i -> {
+            for (Estado estado : estados) {
+                if (estado.getPais().equals(i)) return true;
+            }
+            return false;
+        }).collect(Collectors.toList());
+
+        Random random = new Random();
+        int index = random.nextInt(paisSemEstados.size());
+        return paisSemEstados.get(index);
+    }
+
+    private Long getPaisInexistente() {
+        Long i = 1L;
+        while (true) {
+            Optional<Pais> pais = paisRepository.findById(i);
+            if (pais.isEmpty()) return i;
+
+            i++;
+        }
+    }
+
+    private Long getEstadoInexistente(Pais pais) {
+        List<Estado> estados = estadoRepository.findByPais(pais);
+
+        Long i = 1L;
+        while (true) {
+            Long id = i;
+            boolean exists = estados.stream().anyMatch(estado -> {
+                return estado.getId().equals(id);
+            });
+
+            if (!exists) return id;
+            i++;
+        }
+    }
+
+    private Long getEstadoExistente(Pais pais) {
+        List<Estado> estados = estadoRepository.findByPais(pais);
+
+        Long i = 1L;
+        while (true) {
+            Long id = i;
+            boolean exists = estados.stream().anyMatch(estado -> {
+                return estado.getId().equals(id);
+            });
+
+            if (exists) return id;
+            i++;
+        }
     }
 
     @BeforeEach
@@ -139,19 +197,30 @@ class ClienteFormTest {
         validator.setConstraintValidatorFactory(validatorFactory);
         validator.setApplicationContext(applicationContext);
         validator.afterPropertiesSet();
+
+        Pais pais1L = paisRepository.save(new Pais("Pais 1L"));
+        Pais pais2L = paisRepository.save(new Pais("Pais 2L"));
+        Pais pais3L = paisRepository.save(new Pais("Pais 3L"));
+
+        Estado estado1L = estadoRepository.save(new Estado("Estado 1L", pais2L));
+        Estado estado2L = estadoRepository.save(new Estado("Estado 2L", pais2L));
     }
 
     @ParameterizedTest
     @MethodSource("providenciaClienteFormParaValidacaoCamposVazios")
-    public void testaValidacaoCamposObrigatorios(ClienteForm cliente, boolean valido, String mensagem) {
-        Set<ConstraintViolation<ClienteForm>> errors = validator.validate(cliente);
+    public void testaValidacaoCamposObrigatorios(Method method, String value, boolean valido, String mensagem) throws Exception {
+        ClienteFormBuilder form = getRandomValidFormBuilder();
+        method.invoke(form, value);
+
+        Set<ConstraintViolation<ClienteForm>> errors = validator.validate(form.build());
         Assertions.assertEquals(valido, errors.isEmpty(), mensagem);
     }
 
     @ParameterizedTest
     @MethodSource("providenciaClienteFormParaValidacaoEmail")
-    public void testaValidacaoEmail(ClienteForm form, boolean valido, String mensagem) {
-        Set<ConstraintViolation<ClienteForm>> errors = validator.validate(form);
+    public void testaValidacaoEmail(String email, boolean valido, String mensagem) throws Exception {
+        ClienteFormBuilder form = getRandomValidFormBuilder().setEmail(email);
+        Set<ConstraintViolation<ClienteForm>> errors = validator.validate(form.build());
         Assertions.assertEquals(valido, errors.isEmpty(), mensagem);
     }
 
@@ -166,26 +235,32 @@ class ClienteFormTest {
 
     @Test
     public void testaValidacaoPaisSemEstados() throws Exception {
-        ClienteFormBuilder builder = getRandomValidFormBuilder().setPaisId(1L);
+        Pais pais = getPaisSemEstados();
+        ClienteFormBuilder builder = getRandomValidFormBuilder().setPaisId(pais.getId());
 
         Set<ConstraintViolation<ClienteForm>> errors = validator.validate(builder.build());
-        Assertions.assertTrue(errors.isEmpty(),
-                "País 1L não tem estados e deveria ser válido!");
+        Assertions.assertTrue(errors.isEmpty(), String.format(
+                "País %s não tem estados e deveria ser válido!", pais.getId()
+        ));
     }
 
     @Test
     public void testaValidacaoPaisComEstadoVazioInvalido() throws Exception {
-        ClienteFormBuilder builder = getRandomValidFormBuilder().setPaisId(2L);
+        Pais pais = getPaisComEstados();
+        ClienteFormBuilder builder = getRandomValidFormBuilder().setPaisId(pais.getId());
 
         Set<ConstraintViolation<ClienteForm>> errors = validator.validate(builder.build());
-        Assertions.assertFalse(errors.isEmpty(),
-                "País 2L tem estados e deveria ser inválido!");
+        Assertions.assertFalse(errors.isEmpty(), String.format(
+                "País %s tem estados e deveria ser inválido!", pais.getId()
+        ));
     }
 
     @Test
     public void testaValidacaoPaisComEstadoInvalido() throws Exception {
+        Pais pais = getPaisComEstados();
+        Long estado = getEstadoInexistente(pais);
         ClienteFormBuilder builder = getRandomValidFormBuilder()
-                .setPaisId(2L).setEstadoId(10L);
+                .setPaisId(pais.getId()).setEstadoId(estado);
 
         Set<ConstraintViolation<ClienteForm>> errors = validator.validate(builder.build());
         Assertions.assertFalse(errors.isEmpty(),
@@ -194,8 +269,11 @@ class ClienteFormTest {
 
     @Test
     public void testaValidacaoPaisComEstadoValido() throws Exception {
+        Pais pais = getPaisComEstados();
+        Long estado = getEstadoExistente(pais);
+
         ClienteFormBuilder builder = getRandomValidFormBuilder()
-                .setPaisId(2L).setEstadoId(1L);
+                .setPaisId(pais.getId()).setEstadoId(estado);
 
         Set<ConstraintViolation<ClienteForm>> errors = validator.validate(builder.build());
         Assertions.assertTrue(errors.isEmpty(),

@@ -8,6 +8,7 @@ import bootcamp.casacodigo.categoria.repository.CategoriaRepository;
 import bootcamp.casacodigo.livro.model.Livro;
 import bootcamp.casacodigo.livro.repository.LivroRepository;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -28,6 +30,7 @@ import java.util.List;
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestInstance(value = TestInstance.Lifecycle.PER_CLASS)
+@Transactional @Rollback
 class LivroControllerTest {
     @Autowired
     private MockMvc mvc;
@@ -39,8 +42,7 @@ class LivroControllerTest {
     @Autowired
     private LivroRepository livroRepository;
 
-    @BeforeAll
-    @Transactional
+    @BeforeEach
     public void setup () {
         List<Categoria> categorias = List.of(
                 new Categoria("Ação"),

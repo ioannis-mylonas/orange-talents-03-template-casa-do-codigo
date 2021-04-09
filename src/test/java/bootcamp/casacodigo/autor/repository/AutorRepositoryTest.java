@@ -20,7 +20,7 @@ class AutorRepositoryTest {
     @Autowired
     private AutorRepository autorRepository;
 
-    public static List<Autor> geraAutoresValidos() {
+    private static List<Autor> geraAutoresValidos() {
         AutorBuilder builder = new AutorBuilder();
 
         return List.of(
@@ -39,7 +39,7 @@ class AutorRepositoryTest {
         );
     }
 
-    public static Stream<Arguments> provideAutoresForConsultaEmail() {
+    private static Stream<Arguments> provideAutoresForConsultaEmail() {
         List<Autor> autores = geraAutoresValidos();
 
         List<String> emailsInexistentes = List.of(
@@ -55,7 +55,7 @@ class AutorRepositoryTest {
         return Stream.of(Arguments.of(autores, emailsInexistentes, emailsExistentes));
     }
 
-    public static Stream<List<Autor>> providenciaAutoresValidosParaTeste() {
+    private static Stream<List<Autor>> providenciaAutoresValidosParaTeste() {
         List<Autor> autores = geraAutoresValidos();
         return Stream.of(autores);
     }
@@ -63,7 +63,7 @@ class AutorRepositoryTest {
     @ParameterizedTest
     @MethodSource("provideAutoresForConsultaEmail")
     @Transactional
-    public void testaBuscaEmailExistente(List<Autor> autores,
+    private void testaBuscaEmailExistente(List<Autor> autores,
                                          List<String> emailsInexistentes,
                                          List<String> emailsExistentes) {
 
@@ -87,7 +87,7 @@ class AutorRepositoryTest {
     @ParameterizedTest
     @MethodSource("providenciaAutoresValidosParaTeste")
     @Transactional
-    public void testaBuscaAutorLivroView(List<Autor> autores) {
+    private void testaBuscaAutorLivroView(List<Autor> autores) {
         autorRepository.saveAll(autores);
         Long i = 1L;
 

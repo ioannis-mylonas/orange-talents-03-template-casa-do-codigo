@@ -14,6 +14,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory;
 
@@ -28,8 +29,6 @@ import java.util.*;
 import java.util.stream.Stream;
 
 @DataJpaTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Transactional
 public class LivroFormTest {
     @Autowired
     private CategoriaRepository categoriaRepository;
@@ -41,7 +40,7 @@ public class LivroFormTest {
     private SpringConstraintValidatorFactory validatorFactory;
     private LocalValidatorFactoryBean validator;
 
-    private Map<String, Map<Class<?>, List<Object>>> valoresValidos = Map.of(
+    private static Map<String, Map<Class<?>, List<Object>>> valoresValidos = Map.of(
             "setTitulo", Map.of(String.class, List.of(
                     "O Vôo das Galinhas", "A Vida de Clarisbela", "Balões que Voam")),
             "setResumo", Map.of(String.class, List.of(
@@ -59,21 +58,33 @@ public class LivroFormTest {
             "setPublicacao", Map.of(LocalDate.class, List.of(
                     LocalDate.ofInstant(Instant.now().plusSeconds(526000), ZoneId.of("UTC")),
                     LocalDate.ofInstant(Instant.now().plusSeconds(756000), ZoneId.of("UTC")),
-                    LocalDate.ofInstant(Instant.now().plusSeconds(842500), ZoneId.of("UTC")))),
-            "setCategoriaId", Map.of(Long.class, List.of(
-                    1L, 2L, 3L)),
-            "setAutorId", Map.of(Long.class, List.of(
-                    1L, 2L))
+                    LocalDate.ofInstant(Instant.now().plusSeconds(842500), ZoneId.of("UTC"))))
     );
 
-    private Object pickRandomValue(List<Object> values) {
+    private static Object pickRandomValue(List<Object> values) {
         Random random = new Random();
         int index = random.nextInt(values.size());
         return values.get(index);
     }
 
+    private Long getRandomExistingCategoriaId() {
+        Random random = new Random();
+        List<Categoria> categorias = categoriaRepository.findAll();
+        int index = random.nextInt(categorias.size());
+        return categorias.get(index).getId();
+    }
+
+    private Long getRandomExistingAutorId() {
+        Random random = new Random();
+        List<Autor> autores = autorRepository.findAll();
+        int index = random.nextInt(autores.size());
+        return autores.get(index).getId();
+    }
+
     private LivroFormBuilder generateRandomValidFormBuilder() throws Exception {
-        LivroFormBuilder builder = new LivroFormBuilder();
+        LivroFormBuilder builder = new LivroFormBuilder()
+                .setAutorId(getRandomExistingAutorId())
+                .setCategoriaId(getRandomExistingCategoriaId());
 
         for (String key : valoresValidos.keySet()) {
             Map<Class<?>, List<Object>> values = valoresValidos.get(key);
@@ -90,47 +101,44 @@ public class LivroFormTest {
         return builder;
     }
 
-    private Stream<Arguments> provideLivroFormBuilderParaTesteCampoObrigatorioVazio() throws Exception {
-        LivroFormBuilder builder = generateRandomValidFormBuilder();
+    private static Stream<Arguments> provideLivroFormBuilderParaTesteCampoObrigatorioVazio() throws Exception {
         Stream.Builder<Arguments> stream = Stream.builder();
 
         List<String> stringsVazias = Arrays.asList("", "        ");
 
         for (String methodName : valoresValidos.keySet()) {
             for (Class<?> castTo : valoresValidos.get(methodName).keySet()) {
-                Method method = builder.getClass().getMethod(methodName, castTo);
+                Method method = LivroFormBuilder.class.getMethod(methodName, castTo);
                 method.setAccessible(true);
 
-                method.invoke(builder, castTo.cast(null));
                 stream.add(Arguments.of(
-                        builder.build(), String.format(
+                        method, castTo, null, String.format(
                                 "Campo de tipo %s com valor null deveria ser inválido!",
-                                castTo.getName()
-                        )
+                                castTo.getName()), false
                 ));
 
                 if (castTo == String.class) {
                     for (String value : stringsVazias) {
-                        method.invoke(builder, castTo.cast(value));
                         stream.add(Arguments.of(
-                                builder.build(), String.format(
+                                method, castTo, value, String.format(
                                         "Campo de tipo %s com valor %s deveria ser inválido!",
-                                        castTo.getName(), castTo.cast(value)
-                                )
+                                        castTo.getName(), castTo.cast(value)), false
                         ));
                     }
                 }
 
                 Object value = pickRandomValue(valoresValidos.get(methodName).get(castTo));
-                method.invoke(builder, castTo.cast(value));
+                stream.add(Arguments.of(method, castTo, value, String.format(
+                        "Campo de tipo %s com valor %s deveria ser válido!",
+                        castTo.getName(), castTo.cast(value)), true
+                ));
             }
         }
 
         return stream.build();
     }
 
-    @BeforeAll
-    @Transactional
+    @BeforeEach
     public void setupClass() {
         List<Categoria> categorias = List.of(
                 new Categoria("Ação"),
@@ -145,10 +153,7 @@ public class LivroFormTest {
 
         categoriaRepository.saveAll(categorias);
         autorRepository.saveAll(autores);
-    }
 
-    @BeforeEach
-    public void setup() {
         validatorFactory = new SpringConstraintValidatorFactory(
                 applicationContext.getAutowireCapableBeanFactory());
 
@@ -160,8 +165,14 @@ public class LivroFormTest {
 
     @ParameterizedTest
     @MethodSource("provideLivroFormBuilderParaTesteCampoObrigatorioVazio")
-    public void testaCampoVazio(LivroForm form, String mensagem) {
-        Set<ConstraintViolation<LivroForm>> errors = validator.validate(form);
-        Assertions.assertFalse(errors.isEmpty(), mensagem);
+    public void testaCampoVazio(Method method, Class<?> castTo,
+                                Object value, String mensagem,
+                                boolean esperado) throws Exception {
+
+        LivroFormBuilder builder = generateRandomValidFormBuilder();
+        method.invoke(builder, castTo.cast(value));
+
+        Set<ConstraintViolation<LivroForm>> errors = validator.validate(builder.build());
+        Assertions.assertEquals(esperado, errors.isEmpty(), mensagem);
     }
 }
