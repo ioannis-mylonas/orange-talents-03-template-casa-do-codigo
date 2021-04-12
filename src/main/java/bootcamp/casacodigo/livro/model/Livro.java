@@ -1,19 +1,11 @@
 package bootcamp.casacodigo.livro.model;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.Lob;
-import javax.persistence.ManyToOne;
-
 import bootcamp.casacodigo.autor.model.Autor;
 import bootcamp.casacodigo.categoria.model.Categoria;
+
+import javax.persistence.*;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
 public class Livro {

@@ -1,8 +1,8 @@
 package bootcamp.casacodigo.livro.view;
 
-import java.math.BigDecimal;
-
 import bootcamp.casacodigo.autor.view.AutorLivroView;
+
+import java.math.BigDecimal;
 
 public class LivroDetalheView {
 	String titulo, resumo, sumario, isbn;

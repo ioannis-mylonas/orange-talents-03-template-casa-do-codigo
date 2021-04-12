@@ -1,10 +1,9 @@
 package bootcamp.casacodigo.localizacao.form;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 import bootcamp.casacodigo.localizacao.model.Pais;
 import bootcamp.casacodigo.validator.UniqueColumn;
+
+import javax.validation.constraints.NotBlank;
 
 public class PaisForm {
 	@NotBlank @UniqueColumn(target = Pais.class, column = "nome")

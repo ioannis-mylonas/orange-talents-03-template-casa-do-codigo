@@ -1,9 +1,5 @@
 package bootcamp.casacodigo.cliente.form;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 import bootcamp.casacodigo.cliente.model.Cliente;
 import bootcamp.casacodigo.localizacao.model.Estado;
 import bootcamp.casacodigo.localizacao.model.Pais;
@@ -13,6 +9,10 @@ import bootcamp.casacodigo.validator.CpfCnpj;
 import bootcamp.casacodigo.validator.EstadoValido;
 import bootcamp.casacodigo.validator.OneExists;
 import bootcamp.casacodigo.validator.UniqueColumn;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @EstadoValido
 public class ClienteForm {

@@ -4,7 +4,9 @@ import bootcamp.casacodigo.localizacao.model.Estado;
 import bootcamp.casacodigo.localizacao.model.Pais;
 import bootcamp.casacodigo.localizacao.repository.EstadoRepository;
 import bootcamp.casacodigo.localizacao.repository.PaisRepository;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -14,7 +16,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.validation.beanvalidation.SpringConstraintValidatorFactory;
 
-import javax.transaction.Transactional;
 import javax.validation.ConstraintViolation;
 import java.lang.reflect.Method;
 import java.util.*;

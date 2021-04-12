@@ -1,15 +1,9 @@
 package bootcamp.casacodigo.cliente.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
 import bootcamp.casacodigo.localizacao.model.Estado;
 import bootcamp.casacodigo.localizacao.model.Pais;
+
+import javax.persistence.*;
 
 @Entity
 public class Cliente {

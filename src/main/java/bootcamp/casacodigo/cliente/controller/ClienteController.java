@@ -1,18 +1,17 @@
 package bootcamp.casacodigo.cliente.controller;
 
-import javax.transaction.Transactional;
-import javax.validation.Valid;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import bootcamp.casacodigo.cliente.form.ClienteForm;
 import bootcamp.casacodigo.cliente.model.Cliente;
 import bootcamp.casacodigo.cliente.repository.ClienteRepository;
 import bootcamp.casacodigo.localizacao.repository.EstadoRepository;
 import bootcamp.casacodigo.localizacao.repository.PaisRepository;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.transaction.Transactional;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/clientes")

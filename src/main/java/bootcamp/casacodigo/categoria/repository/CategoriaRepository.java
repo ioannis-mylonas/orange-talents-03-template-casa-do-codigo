@@ -1,10 +1,9 @@
 package bootcamp.casacodigo.categoria.repository;
 
-import java.util.Optional;
-
+import bootcamp.casacodigo.categoria.model.Categoria;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import bootcamp.casacodigo.categoria.model.Categoria;
+import java.util.Optional;
 
 public interface CategoriaRepository extends JpaRepository<Categoria, Long> {
 	Optional<Categoria> findByNomeIgnoreCase(String nome);

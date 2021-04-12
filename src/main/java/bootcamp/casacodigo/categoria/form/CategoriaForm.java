@@ -1,10 +1,10 @@
 package bootcamp.casacodigo.categoria.form;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
 import bootcamp.casacodigo.categoria.model.Categoria;
 import bootcamp.casacodigo.validator.UniqueColumn;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 public class CategoriaForm {
 	@NotNull @NotBlank @UniqueColumn(target=Categoria.class, column="nome")

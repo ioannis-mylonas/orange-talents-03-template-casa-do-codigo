@@ -1,17 +1,16 @@
 package bootcamp.casacodigo.localizacao.controller;
 
-import javax.transaction.Transactional;
-import javax.validation.Valid;
-
+import bootcamp.casacodigo.localizacao.form.EstadoForm;
+import bootcamp.casacodigo.localizacao.model.Estado;
+import bootcamp.casacodigo.localizacao.repository.EstadoRepository;
+import bootcamp.casacodigo.localizacao.repository.PaisRepository;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import bootcamp.casacodigo.localizacao.form.EstadoForm;
-import bootcamp.casacodigo.localizacao.model.Estado;
-import bootcamp.casacodigo.localizacao.repository.EstadoRepository;
-import bootcamp.casacodigo.localizacao.repository.PaisRepository;
+import javax.transaction.Transactional;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/estados")

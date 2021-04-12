@@ -1,16 +1,15 @@
 package bootcamp.casacodigo.validator;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-
 import bootcamp.casacodigo.cliente.form.ClienteForm;
 import bootcamp.casacodigo.localizacao.model.Estado;
 import bootcamp.casacodigo.localizacao.model.Pais;
 import bootcamp.casacodigo.localizacao.repository.EstadoRepository;
 import bootcamp.casacodigo.localizacao.repository.PaisRepository;
+
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+import java.util.List;
+import java.util.Optional;
 
 public class EstadoValidoValidator implements ConstraintValidator<EstadoValido, ClienteForm> {
 
