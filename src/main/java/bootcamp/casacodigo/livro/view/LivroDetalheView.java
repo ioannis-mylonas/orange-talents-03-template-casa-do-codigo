@@ -1,5 +1,6 @@
 package bootcamp.casacodigo.livro.view;
 
+import bootcamp.casacodigo.autor.model.Autor;
 import bootcamp.casacodigo.autor.view.AutorLivroView;
 
 import java.math.BigDecimal;
@@ -12,7 +13,7 @@ public class LivroDetalheView {
 
 	public LivroDetalheView(String titulo, String resumo, String sumario,
 							String isbn, BigDecimal preco, Integer paginas,
-							AutorLivroView autor) {
+							Autor autor) {
 
 		this.titulo = titulo;
 		this.resumo = resumo;
@@ -20,7 +21,7 @@ public class LivroDetalheView {
 		this.isbn = isbn;
 		this.preco = preco;
 		this.paginas = paginas;
-		this.autor = autor;
+		this.autor = new AutorLivroView(autor);
 	}
 
 	public String getTitulo() {

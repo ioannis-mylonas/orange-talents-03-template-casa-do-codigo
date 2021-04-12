@@ -1,5 +1,6 @@
 package bootcamp.casacodigo.livro.controller;
 
+import bootcamp.casacodigo.autor.model.Autor;
 import bootcamp.casacodigo.autor.view.AutorLivroView;
 import bootcamp.casacodigo.livro.repository.LivroRepository;
 import bootcamp.casacodigo.livro.view.LivroDetalheView;
@@ -31,7 +32,8 @@ class LivroControllerTest {
         Optional<LivroDetalheView> resposta = Optional.of(
                 new LivroDetalheView("Um Título", "Um Resumo", "Um Sumário",
                         "Um ISBN", BigDecimal.valueOf(150.00), 500,
-                        new AutorLivroView("Um Autor", "Uma descrição de autor.")));
+                        new Autor("Autor", "autor@email.com", "Descricao")
+                ));
 
         Mockito.when(mockLivroRepository.findLivroDetalheById(1L)).thenReturn(resposta);
 

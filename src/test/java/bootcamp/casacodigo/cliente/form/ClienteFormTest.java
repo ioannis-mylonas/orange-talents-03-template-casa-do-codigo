@@ -19,8 +19,6 @@ import org.springframework.validation.beanvalidation.SpringConstraintValidatorFa
 import javax.validation.ConstraintViolation;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @DataJpaTest
 class ClienteFormTest {
@@ -52,18 +50,24 @@ class ClienteFormTest {
             "setCep", List.of("65051-330", "82515-095", "66025-013")
     );
 
+    private int pickRandomIndex(List<?> values) {
+        Random random = new Random();
+        return random.nextInt(values.size());
+    }
+
+    private <T> T pickRandomValue(List<T> values) {
+        return values.get(pickRandomIndex(values));
+    }
+
     private ClienteFormBuilder getRandomValidFormBuilder() throws Exception {
         ClienteFormBuilder builder = new ClienteFormBuilder();
 
         for (String key : valoresStringValidos.keySet()) {
             Method method = builder.getClass().getMethod(key, String.class);
             method.setAccessible(true);
-            Random random = new Random();
 
             List<String> possibilidades = valoresStringValidos.get(key);
-
-            int index = random.nextInt(possibilidades.size());
-            method.invoke(builder, possibilidades.get(index));
+            method.invoke(builder, pickRandomValue(possibilidades));
         }
 
         builder.setPaisId(getPaisSemEstados().getId());
@@ -78,7 +82,7 @@ class ClienteFormTest {
 
             if (!temEstados) return pais;
         }
-        return null;
+        throw new NoSuchElementException();
     }
 
     private Pais getPaisComEstados() {
@@ -87,8 +91,6 @@ class ClienteFormTest {
     }
 
     private Long getEstadoIdInexistente(Pais pais) {
-        List<Estado> estados = estadoRepository.findByPais(pais);
-
         long i = 1L;
         while (true) {
             Long id = i;
@@ -100,15 +102,7 @@ class ClienteFormTest {
     }
 
     private Estado getEstadoExistente() {
-        long i = 1L;
-        while (true) {
-            Long id = i;
-            Optional<Estado> match = estados.stream()
-                    .filter(estado -> estado.getId().equals(id)).findFirst();
-
-            if (match.isPresent()) return match.get();
-            i++;
-        }
+        return pickRandomValue(estados);
     }
 
     @BeforeEach
