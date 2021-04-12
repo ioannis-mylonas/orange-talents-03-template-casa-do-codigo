@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
@@ -23,7 +23,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.stream.Stream;
 
 @DataJpaTest
 public class LivroFormTest {
@@ -34,8 +33,12 @@ public class LivroFormTest {
     @Autowired
     private ApplicationContext applicationContext;
 
+    private List<Autor> autores;
+    private List<Categoria> categorias;
+
     private SpringConstraintValidatorFactory validatorFactory;
     private LocalValidatorFactoryBean validator;
+    private LivroFormBuilder builder;
 
     private static Map<String, Map<Class<?>, List<Object>>> valoresValidos = Map.of(
             "setTitulo", Map.of(String.class, List.of(
@@ -58,50 +61,46 @@ public class LivroFormTest {
                     LocalDate.ofInstant(Instant.now().plusSeconds(842500), ZoneId.of("UTC"))))
     );
 
-    private static Object pickRandomValue(List<Object> values) {
+    private int pickRandomIndex(List<?> values) {
         Random random = new Random();
-        int index = random.nextInt(values.size());
+        return random.nextInt(values.size());
+    }
+
+    private <T> T pickRandomValue(List<T> values) {
+        int index = pickRandomIndex(values);
         return values.get(index);
     }
 
     private Long getRandomExistingCategoriaId() {
-        Random random = new Random();
-        List<Categoria> categorias = categoriaRepository.findAll();
-        int index = random.nextInt(categorias.size());
+        int index = pickRandomIndex(categorias);
         return categorias.get(index).getId();
     }
 
     private Long getRandomExistingAutorId() {
-        Random random = new Random();
-        List<Autor> autores = autorRepository.findAll();
-        int index = random.nextInt(autores.size());
+        int index = pickRandomIndex(autores);
         return autores.get(index).getId();
     }
 
     private Long getRandomInexistentCategoriaId() {
-        List<Categoria> categorias = categoriaRepository.findAll();
         long i = 1L;
         while (true) {
             Long id = i;
-            boolean exists = categorias.stream().anyMatch(categoria -> {
-                return categoria.getId().equals(id);
-            });
+            Optional<Categoria> categoria = categorias.stream()
+                    .filter(it -> it.getId().equals(id)).findFirst();
 
-            if (!exists) return id;
+            if (categoria.isEmpty()) return i;
             i++;
         }
     }
 
     private Long getRandomInexistentAutorId() {
-        List<Autor> autores = autorRepository.findAll();
         long i = 1L;
         while (true) {
             Long id = i;
-            boolean exists = autores.stream().anyMatch(autor -> {
-                return autor.getId().equals(id);
-            });
+            Optional<Autor> autor = autores.stream()
+                    .filter(it -> it.getId().equals(id)).findFirst();
 
-            if (!exists) return id;
+            if (autor.isEmpty()) return i;
             i++;
         }
     }
@@ -126,58 +125,18 @@ public class LivroFormTest {
         return builder;
     }
 
-    private static Stream<Arguments> provideLivroFormBuilderParaTesteCampoObrigatorioVazio() throws Exception {
-        Stream.Builder<Arguments> stream = Stream.builder();
-
-        List<String> stringsVazias = Arrays.asList("", "        ");
-
-        for (String methodName : valoresValidos.keySet()) {
-            for (Class<?> castTo : valoresValidos.get(methodName).keySet()) {
-                Method method = LivroFormBuilder.class.getMethod(methodName, castTo);
-                method.setAccessible(true);
-
-                stream.add(Arguments.of(
-                        method, castTo, null, String.format(
-                                "Campo de tipo %s com valor null deveria ser inválido!",
-                                castTo.getName()), false
-                ));
-
-                if (castTo == String.class) {
-                    for (String value : stringsVazias) {
-                        stream.add(Arguments.of(
-                                method, castTo, value, String.format(
-                                        "Campo de tipo %s com valor %s deveria ser inválido!",
-                                        castTo.getName(), castTo.cast(value)), false
-                        ));
-                    }
-                }
-
-                Object value = pickRandomValue(valoresValidos.get(methodName).get(castTo));
-                stream.add(Arguments.of(method, castTo, value, String.format(
-                        "Campo de tipo %s com valor %s deveria ser válido!",
-                        castTo.getName(), castTo.cast(value)), true
-                ));
-            }
-        }
-
-        return stream.build();
-    }
-
     @BeforeEach
-    public void setup() {
-        List<Categoria> categorias = List.of(
+    public void setup() throws Exception {
+        categorias = categoriaRepository.saveAll(List.of(
                 new Categoria("Ação"),
                 new Categoria("Mistério"),
                 new Categoria("Aventura")
-        );
+        ));
 
-        List<Autor> autores = List.of(
+        autores = autorRepository.saveAll(List.of(
                 new Autor("Josefino da Silva", "josefino.silva@email.com", "Dr. Josefino"),
                 new Autor("Alessandra dos Santos", "alessandra.santos@email.com", "Dra. Alessandra")
-        );
-
-        categoriaRepository.saveAll(categorias);
-        autorRepository.saveAll(autores);
+        ));
 
         validatorFactory = new SpringConstraintValidatorFactory(
                 applicationContext.getAutowireCapableBeanFactory());
@@ -186,24 +145,80 @@ public class LivroFormTest {
         validator.setConstraintValidatorFactory(validatorFactory);
         validator.setApplicationContext(applicationContext);
         validator.afterPropertiesSet();
+
+        builder = generateRandomValidFormBuilder();
+        Set<ConstraintViolation<LivroForm>> errors = validator.validate(builder.build());
+        Assertions.assertTrue(errors.isEmpty());
     }
 
     @ParameterizedTest
-    @MethodSource("provideLivroFormBuilderParaTesteCampoObrigatorioVazio")
-    public void testaCampoVazio(Method method, Class<?> castTo,
-                                Object value, String mensagem,
-                                boolean esperado) throws Exception {
-
-        LivroFormBuilder builder = generateRandomValidFormBuilder();
-        method.invoke(builder, castTo.cast(value));
-
+    @NullAndEmptySource
+    public void testaTituloVazioInvalido(String titulo) {
+        builder.setTitulo(titulo);
         Set<ConstraintViolation<LivroForm>> errors = validator.validate(builder.build());
-        Assertions.assertEquals(esperado, errors.isEmpty(), mensagem);
+        Assertions.assertFalse(errors.isEmpty());
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void testaResumoVazioInvalido(String resumo) {
+        builder.setResumo(resumo);
+        Set<ConstraintViolation<LivroForm>> errors = validator.validate(builder.build());
+        Assertions.assertFalse(errors.isEmpty());
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void testaSumarioVazioInvalido(String sumario) {
+        builder.setSumario(sumario);
+        Set<ConstraintViolation<LivroForm>> errors = validator.validate(builder.build());
+        Assertions.assertFalse(errors.isEmpty());
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void testaIsbnVazioInvalido(String isbn) {
+        builder.setIsbn(isbn);
+        Set<ConstraintViolation<LivroForm>> errors = validator.validate(builder.build());
+        Assertions.assertFalse(errors.isEmpty());
+    }
+
+    @ParameterizedTest
+    @NullSource
+    public void testaPrecoVazioInvalido(BigDecimal preco) {
+        builder.setPreco(preco);
+        Set<ConstraintViolation<LivroForm>> errors = validator.validate(builder.build());
+        Assertions.assertFalse(errors.isEmpty());
+    }
+
+    @ParameterizedTest
+    @NullSource
+    public void testaPaginasVazioInvalido(Integer paginas) {
+        builder.setPaginas(paginas);
+        Set<ConstraintViolation<LivroForm>> errors = validator.validate(builder.build());
+        Assertions.assertFalse(errors.isEmpty());
+    }
+
+    @ParameterizedTest
+    @NullSource
+    public void testaPublicacaoVazioInvalido(LocalDate publicacao) {
+        builder.setPublicacao(publicacao);
+        Set<ConstraintViolation<LivroForm>> errors = validator.validate(builder.build());
+        Assertions.assertFalse(errors.isEmpty());
     }
 
     @Test
-    public void testaCategoriaInexistente() throws Exception {
-        LivroFormBuilder builder = generateRandomValidFormBuilder();
+    public void testaPublicacaoPassadaInvalido() {
+        Instant instant = Instant.now().minusSeconds(580000);
+        LocalDate publicacao = LocalDate.ofInstant(instant, ZoneId.of("UTC"));
+        builder.setPublicacao(publicacao);
+
+        Set<ConstraintViolation<LivroForm>> errors = validator.validate(builder.build());
+        Assertions.assertFalse(errors.isEmpty());
+    }
+
+    @Test
+    public void testaCategoriaInexistente() {
         long id = getRandomInexistentCategoriaId();
         builder.setCategoriaId(id);
 
@@ -214,8 +229,7 @@ public class LivroFormTest {
     }
 
     @Test
-    public void testaAutorInexistente() throws Exception {
-        LivroFormBuilder builder = generateRandomValidFormBuilder();
+    public void testaAutorInexistente() {
         long id = getRandomInexistentAutorId();
         builder.setAutorId(id);
 
