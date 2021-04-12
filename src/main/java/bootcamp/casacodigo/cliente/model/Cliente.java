@@ -41,7 +41,6 @@ public class Cliente {
 		this.nome = nome;
 		this.sobrenome = sobrenome;
 		this.email = email;
-		this.documento = documento;
 		this.endereco = endereco;
 		this.complemento = complemento;
 		this.cidade = cidade;
@@ -49,9 +48,16 @@ public class Cliente {
 		this.pais = pais;
 		this.telefone = telefone;
 		this.cep = cep;
+
+		this.documento = cleanDocumento(documento);
 	}
 	
 	public Long getId() {
 		return id;
+	}
+
+	public static String cleanDocumento(String documento) {
+		if (documento != null) return documento.replaceAll("[.\\-/]", "");
+		return null;
 	}
 }

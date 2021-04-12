@@ -48,7 +48,6 @@ public class ClienteForm {
 		this.nome = nome;
 		this.sobrenome = sobrenome;
 		this.email = email;
-		this.documento = documento;
 		this.endereco = endereco;
 		this.complemento = complemento;
 		this.cidade = cidade;
@@ -56,6 +55,8 @@ public class ClienteForm {
 		this.estadoId = estadoId;
 		this.telefone = telefone;
 		this.cep = cep;
+
+		this.documento = Cliente.cleanDocumento(documento);
 	}
 	
 	public Long getPaisId() {
