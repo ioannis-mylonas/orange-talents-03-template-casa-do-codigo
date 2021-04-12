@@ -162,7 +162,7 @@ public class LivroFormTest {
     }
 
     @BeforeEach
-    public void setupClass() {
+    public void setup() {
         List<Categoria> categorias = List.of(
                 new Categoria("Ação"),
                 new Categoria("Mistério"),

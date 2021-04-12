@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -31,30 +32,13 @@ class CategoriaRepositoryTest {
             new Categoria("Ficção Científica")
     );
 
-    private static Stream<Arguments> provideNomesExistentes() {
-        return Stream.of(
-                Arguments.of("ação"),
-                Arguments.of("AVENTURA"),
-                Arguments.of("misTÉriO"),
-                Arguments.of("Ficção Científica")
-        );
-    }
-
-    private static Stream<Arguments> provideNomesInexistentes() {
-        return Stream.of(
-                Arguments.of("Comédia"),
-                Arguments.of("terror"),
-                Arguments.of("NULL")
-        );
-    }
-
     @BeforeEach
     public void setup() {
         categoriaRepository.saveAll(categorias);
     }
 
     @ParameterizedTest
-    @MethodSource("provideNomesExistentes")
+    @CsvSource({"ação", "AVENTURA", "misTÉriO", "Ficção Científica"})
     public void testaFindNomesExistentes(String nome) {
         Optional<Categoria> categoria = categoriaRepository.findByNomeIgnoreCase(nome);
         Assertions.assertTrue(categoria.isPresent(), String.format(
@@ -63,7 +47,7 @@ class CategoriaRepositoryTest {
     }
 
     @ParameterizedTest
-    @MethodSource("provideNomesInexistentes")
+    @CsvSource({"Comédia", "terror", "NULL"})
     public void testaFindNomesInexistentes(String nome) {
         Optional<Categoria> categoria = categoriaRepository.findByNomeIgnoreCase(nome);
         Assertions.assertFalse(categoria.isPresent(), String.format(

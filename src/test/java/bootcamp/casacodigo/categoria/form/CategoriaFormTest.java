@@ -8,7 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.ApplicationContext;
@@ -46,18 +48,6 @@ class CategoriaFormTest {
         return Stream.of(null, "", "        ");
     }
 
-    private static Stream<String> providenciaCategoriaFormsComNomesValidos() {
-        return Stream.of("Documentário", "Alienígenas", "Sobrenatural");
-    }
-
-    private static Stream<Arguments> providenciaNomeParaTesteNomeExistente() {
-        return Stream.of(
-                Arguments.of("Ação", false),
-                Arguments.of("mistério", false),
-                Arguments.of("Comédia", true)
-        );
-    }
-
     @BeforeEach
     public void setup() {
         validatorFactory = new SpringConstraintValidatorFactory(
@@ -83,7 +73,7 @@ class CategoriaFormTest {
     }
 
     @ParameterizedTest
-    @MethodSource("providenciaCategoriaFormsComNomesValidos")
+    @CsvSource({"Documentário", "Alienígenas", "Sobrenatural"})
     public void testaValidacaoNomeValido(String nome) {
         CategoriaForm form = new CategoriaFormBuilder().nome(nome).build();
 
@@ -94,12 +84,12 @@ class CategoriaFormTest {
     }
 
     @ParameterizedTest
-    @MethodSource("providenciaNomeParaTesteNomeExistente")
-    public void testaValidacaoNomeExistente(String nome, boolean valido) {
+    @ValueSource(strings = {"Ação", "    mistério    ", "romance"})
+    public void testaValidacaoNomeExistente(String nome) {
         CategoriaForm form = new CategoriaFormBuilder().nome(nome).build();
 
         Set<ConstraintViolation<CategoriaForm>> errors = validator.validate(form);
-        Assertions.assertEquals(valido, errors.isEmpty(), String.format(
+        Assertions.assertFalse(errors.isEmpty(), String.format(
                 "Teste de busca por nome existente %s falhou!", nome
         ));
     }

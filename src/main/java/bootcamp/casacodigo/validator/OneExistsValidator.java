@@ -24,7 +24,7 @@ public class OneExistsValidator implements
 
 	@Override
 	public boolean isValid(Object value, ConstraintValidatorContext context) {
-		String q = String.format("SELECT 1 FROM %s WHERE %s=TRIM(LOWER(:value))",
+		String q = String.format("SELECT 1 FROM %s WHERE TRIM(LOWER(%s))=TRIM(LOWER(:value))",
 				target.getName(), column);
 		
 		Query query = manager.createQuery(q);
